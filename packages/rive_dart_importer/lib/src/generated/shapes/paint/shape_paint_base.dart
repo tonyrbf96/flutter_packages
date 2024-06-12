@@ -1,0 +1,49 @@
+// Core automatically generated
+// lib/src/generated/shapes/paint/shape_paint_base.dart.
+// Do not modify manually.
+
+import 'package:rive_dart_importer/src/generated/component_base.dart';
+import 'package:rive_dart_importer/src/generated/container_component_base.dart';
+import 'package:rive_dart_importer/src/rive_core/container_component.dart';
+
+abstract class ShapePaintBase extends ContainerComponent {
+  static const int typeKey = 21;
+  @override
+  int get coreType => ShapePaintBase.typeKey;
+  @override
+  Set<int> get coreTypes => {
+        ShapePaintBase.typeKey,
+        ContainerComponentBase.typeKey,
+        ComponentBase.typeKey
+      };
+
+  /// --------------------------------------------------------------------------
+  /// IsVisible field with key 41.
+  static const int isVisiblePropertyKey = 41;
+  static const bool isVisibleInitialValue = true;
+  bool _isVisible = isVisibleInitialValue;
+  bool get isVisible => _isVisible;
+
+  /// Change the [_isVisible] field value.
+  /// [isVisibleChanged] will be invoked only if the field's value has changed.
+  set isVisible(bool value) {
+    if (_isVisible == value) {
+      return;
+    }
+    bool from = _isVisible;
+    _isVisible = value;
+    if (hasValidated) {
+      isVisibleChanged(from, value);
+    }
+  }
+
+  void isVisibleChanged(bool from, bool to);
+
+  @override
+  void copy(Core source) {
+    super.copy(source);
+    if (source is ShapePaintBase) {
+      _isVisible = source._isVisible;
+    }
+  }
+}

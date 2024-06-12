@@ -1,0 +1,136 @@
+name: melossamble
+
+packages:
+  - rive_extension
+
+scripts:
+  gen:dart:
+    run: dart run melos exec -c 1 -- dart run build_runner build
+    packageFilters:
+      dependsOn: build_runner
+      flutter: false
+
+  gen:dart:all:
+    run: dart run melos exec -c 1 -- dart run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: build_runner
+      flutter: false
+
+  gen:flutter:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner build
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:flutter:all:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner build
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:all:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner build --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:dart:watch:
+    run: dart run melos exec -c 1 -- dart run build_runner watch
+    packageFilters:
+      dependsOn: build_runner
+      flutter: false
+
+  gen:dart:all:watch:
+    run: dart run melos exec -c 1 -- dart run build_runner watch --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: build_runner
+      flutter: false
+
+  gen:flutter:watch:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner watch
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:flutter:all:watch:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner watch --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:watch:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner watch
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:all:watch:
+    run: dart run melos exec -c 1 -- flutter pub run build_runner watch --delete-conflicting-outputs
+    packageFilters:
+      dependsOn: build_runner
+      flutter: true
+
+  gen:studio:
+    run: dart run melos exec --scope="*studio*" -- flutter pub run build_runner build --delete-conflicting-outputs
+
+  gen:studio:watch:
+    run: dart run melos exec --scope="*studio*" -- flutter pub run build_runner watch --delete-conflicting-outputs
+
+  gen:app:
+    run: dart run melos exec --scope="*app*" --ignore="*app_mini*" -- flutter pub run build_runner build --delete-conflicting-outputs
+
+  gen:app:watch:
+    run: dart run melos exec --scope="*app*" --ignore="*app_mini*" -- flutter pub run build_runner watch --delete-conflicting-outputs
+
+  sync:
+    run: dart run melos exec -c 1 -- lockpick sync ./
+    packageFilters: {}
+
+  format:
+    run: dart run melos exec -- dart format .
+    packageFilters: {}
+
+  format:all:
+    run: dart run melos exec -- dart format .
+    packageFilters: {}
+
+  fix:
+    run: dart run melos exec -- dart fix --apply
+    packageFilters: {}
+
+  test:format:
+    run: dart run melos exec -- dart format --set-exit-if-changed .
+    packageFilters: {}
+
+  test:analyze:dart:
+    run: dart run melos exec -- dart analyze
+    packageFilters:
+      flutter: false
+
+  test:analyze:flutter:
+    run: dart run melos exec -- flutter analyze
+    packageFilters:
+      flutter: true
+
+  test:custom_lint:
+    run: dart run melos exec -c 1 -- custom_lint
+    packageFilters:
+      dependsOn: custom_lint
+
+  test:only:
+    run: dart run melos exec -c 1 -- flutter test --coverage
+    packageFilters:
+      dirExists: test
+
+  test:all:
+    run: dart run melos run test:format --no-select && dart run melos run test:analyze:dart --no-select && dart run melos run test:analyze:flutter --no-select && dart run melos run test:custom_lint --no-select && dart run melos run test:only --no-select
+
+command:
+  bootstrap:
+    runPubGetInParallel: false

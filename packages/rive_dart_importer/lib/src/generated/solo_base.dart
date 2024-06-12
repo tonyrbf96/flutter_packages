@@ -1,0 +1,57 @@
+// Core automatically generated lib/src/generated/solo_base.dart.
+// Do not modify manually.
+
+import 'package:rive_dart_importer/src/core/core.dart';
+import 'package:rive_dart_importer/src/generated/component_base.dart';
+import 'package:rive_dart_importer/src/generated/container_component_base.dart';
+import 'package:rive_dart_importer/src/generated/transform_component_base.dart';
+import 'package:rive_dart_importer/src/generated/world_transform_component_base.dart';
+import 'package:rive_dart_importer/src/rive_core/node.dart';
+
+abstract class SoloBase extends Node {
+  static const int typeKey = 147;
+  @override
+  int get coreType => SoloBase.typeKey;
+  @override
+  Set<int> get coreTypes => {
+        SoloBase.typeKey,
+        NodeBase.typeKey,
+        TransformComponentBase.typeKey,
+        WorldTransformComponentBase.typeKey,
+        ContainerComponentBase.typeKey,
+        ComponentBase.typeKey
+      };
+
+  /// --------------------------------------------------------------------------
+  /// ActiveComponentId field with key 296.
+  static const int activeComponentIdPropertyKey = 296;
+  static const int activeComponentIdInitialValue = 0;
+  int _activeComponentId = activeComponentIdInitialValue;
+
+  /// Identifier of the active child in the solo set.
+  int get activeComponentId => _activeComponentId;
+
+  /// Change the [_activeComponentId] field value.
+  /// [activeComponentIdChanged] will be invoked only if the field's value has
+  /// changed.
+  set activeComponentId(int value) {
+    if (_activeComponentId == value) {
+      return;
+    }
+    int from = _activeComponentId;
+    _activeComponentId = value;
+    if (hasValidated) {
+      activeComponentIdChanged(from, value);
+    }
+  }
+
+  void activeComponentIdChanged(int from, int to);
+
+  @override
+  void copy(Core source) {
+    super.copy(source);
+    if (source is SoloBase) {
+      _activeComponentId = source._activeComponentId;
+    }
+  }
+}

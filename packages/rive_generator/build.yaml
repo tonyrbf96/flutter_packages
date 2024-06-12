@@ -1,0 +1,9 @@
+# Read about `build.yaml` at https://pub.dev/packages/build_config
+builders:
+  rive_generator:
+    import: "package:rive_generator/rive_generator.dart"
+    builder_factories: ["riveBuilder"]
+    build_extensions: { ".dart": ["rive_generator.g.part"] }
+    auto_apply: dependents
+    build_to: cache
+    applies_builders: ["source_gen|combining_builder"]
