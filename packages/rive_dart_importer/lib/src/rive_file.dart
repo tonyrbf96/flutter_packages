@@ -1,7 +1,6 @@
 import 'dart:collection';
 
 import 'package:collection/collection.dart';
-import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:rive_dart_importer/src/asset_loader.dart';
 import 'package:rive_dart_importer/src/core/core.dart';
@@ -37,7 +36,6 @@ import 'package:rive_dart_importer/src/rive_core/component.dart';
 import 'package:rive_dart_importer/src/rive_core/runtime/exceptions/rive_format_error_exception.dart';
 import 'package:rive_dart_importer/src/rive_core/runtime/runtime_header.dart';
 import 'package:rive_dart_importer/src/runtime_nested_artboard.dart';
-import 'package:rive_common/rive_text.dart';
 import 'package:rive_dart_importer/src/utilities/utilities.dart';
 
 typedef Core<CoreContext>? ObjectGenerator(int coreTypeKey);
@@ -308,12 +306,13 @@ class RiveFile {
     for (final artboard in _artboards) {
       var runtimeArtboard = artboard as RuntimeArtboard;
       for (final object in runtimeArtboard.objects.whereNotNull()) {
-        if (object.validate()) {
-          InternalCoreHelper.markValid(object);
-        } else {
-          throw RiveFormatErrorException(
-              'Rive file is corrupt. Invalid $object.');
-        }
+        InternalCoreHelper.markValid(object);
+        // if (object.validate()) {
+        //   InternalCoreHelper.markValid(object);
+        // } else {
+        //   throw RiveFormatErrorException(
+        //       'Rive file is corrupt. Invalid $object.');
+        // }
       }
     }
   }
@@ -345,11 +344,6 @@ class RiveFile {
   }) {
     // TODO: in the next major version add an assert here to make this a
     // requirement
-    if (!_initializedText) {
-      debugPrint('''Rive: RiveFile.import called before RiveFile.initialize()
-
-Consider calling `await RiveFile.initialize()` before using `RiveFile.import`''');
-    }
 
     var reader = BinaryReader(bytes);
     return RiveFile._(
@@ -367,72 +361,13 @@ Consider calling `await RiveFile.initialize()` before using `RiveFile.import`'''
 
   static bool _initializedText = false;
 
-  /// Initialize Rive's text, audio, and layout engines.
-  ///
-  /// This method is automatically called when using `RiveFile.asset`,
-  /// `RiveFile.network`, and `RiveFile.file`.
-  ///
-  /// When using `RiveFile.import` then `RiveFile.initialize()` should be
-  /// called manually.
-  ///
-  /// Consider calling `unawaited(RiveFile.initialize());` in the `main` method
-  /// to ensure the engine has initialized before displaying the first Rive
-  /// graphic.
-  static Future<void> initialize() async {
-    if (!_initializedText) {
-      final status = await Font.initialize();
-      if (status == FontInitStatus.success ||
-          status == FontInitStatus.alreadyInitialized) {
-        _initializedText = true;
-      }
-    }
-  }
-
-  /// Initialize Rive's text engine if it hasn't been yet.
-  @Deprecated('Use `initialize()` instead')
-  static Future<void> initializeText() async {
-    await initialize();
-  }
-
   static Future<RiveFile> _initTextAndImport(
     ByteData bytes, {
     FileAssetLoader? assetLoader,
     bool loadCdnAssets = true,
     ObjectGenerator? objectGenerator,
   }) async {
-    /// If the file looks like it needs the text runtime, let's load it.
-    if (!_initializedText) {
-      await initialize();
-    }
     return RiveFile.import(
-      bytes,
-      assetLoader: assetLoader,
-      loadCdnAssets: loadCdnAssets,
-      objectGenerator: objectGenerator,
-    );
-  }
-
-  /// Imports a Rive file from an asset bundle.
-  ///
-  /// Default uses [rootBundle] from Flutter. Provide a custom [bundle] to load
-  /// from a different bundle.
-  ///
-  /// {@macro rive_file_asset_loader_params}
-  ///
-  /// Whether an assets is embedded/cdn/referenced is determined by the Rive
-  /// file - as set in the editor.
-  static Future<RiveFile> asset(
-    String bundleKey, {
-    AssetBundle? bundle,
-    FileAssetLoader? assetLoader,
-    bool loadCdnAssets = true,
-    ObjectGenerator? objectGenerator,
-  }) async {
-    final bytes = await (bundle ?? rootBundle).load(
-      bundleKey,
-    );
-
-    return _initTextAndImport(
       bytes,
       assetLoader: assetLoader,
       loadCdnAssets: loadCdnAssets,

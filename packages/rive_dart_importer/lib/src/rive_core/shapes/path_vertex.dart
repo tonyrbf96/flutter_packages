@@ -6,7 +6,4 @@ export 'package:rive_dart_importer/src/generated/shapes/path_vertex_base.dart';
 
 abstract class PathVertex<T extends Weight> extends PathVertexBase<T> {
   Path? get path => parent as Path?;
-
-  @override
-  void markGeometryDirty() => path?.markPathDirty();
 }

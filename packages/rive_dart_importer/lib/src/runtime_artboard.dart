@@ -1,8 +1,6 @@
-import 'package:flutter/scheduler.dart';
 import 'package:rive_dart_importer/rive.dart';
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';
-import 'package:rive_dart_importer/src/rive_core/notifier.dart';
 
 /// Adds getters for linear animations and state machines
 extension RuntimeArtboardGetters on RuntimeArtboard {
@@ -91,9 +89,6 @@ extension ArtboardRuntimeExtensions on Artboard {
 /// directly referenced. Use the Artboard type for any direct interactions with
 /// an artboard, and use extension methods to add functionality to Artboard.
 class RuntimeArtboard extends Artboard implements CoreContext {
-  final _redraw = Notifier();
-  ChangeNotifier get redraw => _redraw;
-
   /// Note that objects must be nullable as some may not resolve during load due
   /// to format differences.
   final List<Core?> _objects = [];
@@ -188,9 +183,7 @@ class RuntimeArtboard extends Artboard implements CoreContext {
   }
 
   @override
-  void markNeedsAdvance() {
-    _redraw.notify();
-  }
+  void markNeedsAdvance() {}
 
   @override
   Artboard instance() {
@@ -239,8 +232,6 @@ class RuntimeArtboard extends Artboard implements CoreContext {
       Event event, NestedArtboard target, StateMachineController controller) {
     if (controller.hasListenerWithTarget(target)) {
       controller.reportNestedEvent(event, target);
-      SchedulerBinding.instance
-          .addPostFrameCallback((_) => controller.isActive = true);
     }
   }
 

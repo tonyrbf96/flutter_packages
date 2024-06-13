@@ -1,9 +1,5 @@
-import 'dart:math';
-
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/generated/shapes/cubic_asymmetric_vertex_base.dart';
-import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
-import 'package:rive_common/math.dart';
 
 export 'package:rive_dart_importer/src/generated/shapes/cubic_asymmetric_vertex_base.dart';
 
@@ -24,72 +20,29 @@ class CubicAsymmetricVertex extends CubicAsymmetricVertexBase {
     InternalCoreHelper.markValid(this);
     this.x = x;
     this.y = y;
-    this.inPoint = Vec2D.fromValues(inX ?? inPoint!.x, inY ?? inPoint!.y);
-    this.outPoint = Vec2D.fromValues(outX ?? outPoint!.x, outY ?? outPoint!.y);
-  }
-
-  Vec2D? _inPoint;
-  Vec2D? _outPoint;
-
-  @override
-  Vec2D get outPoint {
-    return _outPoint ??= Vec2D.fromValues(
-        translation.x + cos(rotation) * outDistance,
-        translation.y + sin(rotation) * outDistance);
   }
 
   @override
-  set outPoint(Vec2D value) {
-    _outPoint = Vec2D.clone(value);
-  }
+  var inPoint;
 
   @override
-  Vec2D get inPoint {
-    return _inPoint ??= Vec2D.fromValues(
-        translation.x + cos(rotation) * -inDistance,
-        translation.y + sin(rotation) * -inDistance);
-  }
+  var outPoint;
 
   @override
-  set inPoint(Vec2D value) {
-    _inPoint = Vec2D.clone(value);
-  }
+  void inDistanceChanged(double from, double to) {}
 
   @override
-  String toString() {
-    return 'in $inPoint | $translation | out $outPoint';
-  }
+  void outDistanceChanged(double from, double to) {}
 
   @override
-  void xChanged(double from, double to) {
-    super.xChanged(from, to);
-    _outPoint = _inPoint = null;
-  }
+  void rotationChanged(double from, double to) {}
 
   @override
-  void yChanged(double from, double to) {
-    super.yChanged(from, to);
-    _outPoint = _inPoint = null;
-  }
+  void markGeometryDirty() {}
 
   @override
-  void inDistanceChanged(double from, double to) {
-    addDirt(ComponentDirt.worldTransform);
-    _inPoint = _outPoint = null;
-    path?.markPathDirty();
-  }
+  void xChanged(double from, double to) {}
 
   @override
-  void outDistanceChanged(double from, double to) {
-    addDirt(ComponentDirt.worldTransform);
-    _inPoint = _outPoint = null;
-    path?.markPathDirty();
-  }
-
-  @override
-  void rotationChanged(double from, double to) {
-    addDirt(ComponentDirt.worldTransform);
-    _inPoint = _outPoint = null;
-    path?.markPathDirty();
-  }
+  void yChanged(double from, double to) {}
 }

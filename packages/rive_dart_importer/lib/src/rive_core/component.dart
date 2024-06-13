@@ -1,13 +1,12 @@
+import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/generated/component_base.dart';
 import 'package:rive_dart_importer/src/rive_core/artboard.dart';
 import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
 import 'package:rive_dart_importer/src/rive_core/container_component.dart';
-import 'package:rive_dart_importer/src/utilities/utilities.dart';
 
 export 'package:rive_dart_importer/src/generated/component_base.dart';
 
-abstract class Component extends ComponentBase<RuntimeArtboard>
-    implements DependencyGraphNode<Component>, Parentable<Component> {
+abstract class Component extends ComponentBase<RuntimeArtboard> {
   Artboard? _artboard;
   dynamic _userData;
 

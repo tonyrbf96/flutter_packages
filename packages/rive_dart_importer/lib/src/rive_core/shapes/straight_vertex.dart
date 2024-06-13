@@ -1,8 +1,6 @@
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/generated/shapes/straight_vertex_base.dart';
 import 'package:rive_dart_importer/src/rive_core/bones/weight.dart';
-import 'package:rive_dart_importer/src/rive_core/component.dart';
-import 'package:rive_common/math.dart';
 
 export 'package:rive_dart_importer/src/generated/shapes/straight_vertex_base.dart';
 
@@ -22,27 +20,14 @@ class StraightVertex extends StraightVertexBase {
   String toString() => 'x[$x], y[$y], r[$radius]';
 
   @override
-  void radiusChanged(double from, double to) {
-    path?.markPathDirty();
-  }
+  void markGeometryDirty() {}
 
   @override
-  void childAdded(Component component) {
-    super.childAdded(component);
-    if (component is Weight) {
-      _weight = component;
-    }
-  }
+  void radiusChanged(double from, double to) {}
 
   @override
-  void childRemoved(Component component) {
-    super.childRemoved(component);
-    if (_weight == component) {
-      _weight = null;
-    }
-  }
+  void xChanged(double from, double to) {}
 
   @override
-  Vec2D get renderTranslation =>
-      _weight?.translation ?? super.renderTranslation;
+  void yChanged(double from, double to) {}
 }

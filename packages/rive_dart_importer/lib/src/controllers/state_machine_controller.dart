@@ -55,7 +55,6 @@ abstract class SMIInput<T> {
       return false;
     }
     controller.setInputValue(id, value);
-    controller.isActive = true;
     return true;
   }
 
@@ -129,7 +128,6 @@ class StateMachineController extends core.StateMachineController
     core.OnStateChange? onStateChange,
     // ignore: deprecated_member_use_from_same_package
   }) : super(stateMachine, onStateChange: onStateChange) {
-    isActive = true;
     for (final input in stateMachine.inputs) {
       switch (input.coreType) {
         case StateMachineNumberBase.typeKey:

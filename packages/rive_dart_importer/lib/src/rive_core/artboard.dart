@@ -20,9 +20,6 @@ import 'package:rive_dart_importer/src/rive_core/nested_artboard.dart';
 import 'package:rive_dart_importer/src/rive_core/rive_animation_controller.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/paint/shape_paint_mutator.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/shape_paint_container.dart';
-import 'package:rive_common/layout_engine.dart';
-import 'package:rive_common/math.dart';
-import 'package:rive_dart_importer/src/utilities/utilities.dart';
 
 export 'package:rive_dart_importer/src/generated/artboard_base.dart';
 
@@ -59,29 +56,14 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
   bool _antialiasing = true;
 
   bool get antialiasing => _antialiasing;
-  set antialiasing(bool value) {
-    if (_antialiasing == value) {
-      return;
-    }
-    _antialiasing = value;
-    // Call syncColor on all ShapePaintMutators to update antialiasing on the
-    // paint objects
-    forAll((c) {
-      if (c is ShapePaintMutator) {
-        (c as ShapePaintMutator).syncColor();
-      }
-      return true;
-    });
-  }
+  set antialiasing(bool value) {}
 
   /// Artboard are one of the few (only?) components that can be orphaned.
   @override
   bool get canBeOrphaned => true;
 
-  final Path path = Path();
   List<Component> _dependencyOrder = [];
   final List<Drawable> _drawables = [];
-  final List<DrawRules> _rules = [];
   List<DrawTarget> _sortedDrawRules = [];
 
   final Set<Component> _components = {};
@@ -128,12 +110,6 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
 
   @override
   Artboard get artboard => this;
-
-  Vec2D get originWorld {
-    return Vec2D.fromValues(x + width * originX, y + height * originY);
-  }
-
-  Vec2D get origin => Vec2D.fromValues(width * originX, height * originY);
 
   /// Walk the dependency tree and update components in order. Returns true if
   /// any component updated.
@@ -206,59 +182,7 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
 
   /// Update any dirty components in this artboard.
   bool advance(double elapsedSeconds, {bool nested = false}) {
-    if (_dirtyLayout.isNotEmpty) {
-      var dirtyLayout = _dirtyLayout.toList();
-      _dirtyLayout.clear();
-      syncStyle();
-      for (final layoutComponent in dirtyLayout) {
-        layoutComponent.syncStyle();
-      }
-      layoutNode.calculateLayout(width, height, LayoutDirection.ltr);
-      // Need to sync all layout positions.
-      for (final layout in _dependencyOrder.whereType<LayoutComponent>()) {
-        layout.updateLayoutBounds();
-      }
-    }
-    bool didUpdate = false;
-
-    for (final controller in _animationControllers) {
-      if (controller.isActive) {
-        controller.apply(context, elapsedSeconds);
-        didUpdate = true;
-      }
-    }
-    hasChangedDrawOrderInLastUpdate = false;
-
-    // Joysticks can be applied before updating components if none of the
-    // joysticks have "external" control. If they are controlled/moved by some
-    // other component then they need to apply after the update cycle, which is
-    // less efficient.
-    var canApplyJoysticksEarly = canPreApplyJoysticks();
-    if (canApplyJoysticksEarly) {
-      applyJoysticks();
-    }
-
-    if (updateComponents() || didUpdate) {
-      didUpdate = true;
-    }
-
-    // If joysticks applied, run the update again for the animation changes.
-    if (!canApplyJoysticksEarly && applyJoysticks()) {
-      if (updateComponents()) {
-        didUpdate = true;
-      }
-    }
-
-    if (nested) {
-      var active = _activeNestedArtboards.toList(growable: false);
-      for (final activeNestedArtboard in active) {
-        if (activeNestedArtboard.advance(elapsedSeconds)) {
-          didUpdate = true;
-        }
-      }
-    }
-
-    return didUpdate;
+    return true;
   }
 
   @override
@@ -287,40 +211,10 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
 
   /// Sort the DAG for resolution in order of dependencies such that dependent
   /// components process after their dependencies.
-  void sortDependencies() {
-    var optimistic = DependencyGraphNodeSorter<Component>();
-    var order = optimistic.sort(this);
-    if (order.isEmpty) {
-      // cycle detected, use a more robust solver
-      var robust = TarjansDependencyGraphNodeSorter<Component>();
-      order = robust.sort(this);
-    }
-
-    _dependencyOrder = order;
-    for (final component in _dependencyOrder) {
-      component.graphOrder = graphOrder++;
-      // component.dirt = 255;
-    }
-
-    dirt |= ComponentDirt.components;
-  }
+  void sortDependencies() {}
 
   @override
-  void update(int dirt) {
-    if (dirt & ComponentDirt.worldTransform != 0) {
-      var rect =
-          Rect.fromLTWH(width * -originX, height * -originY, width, height);
-      path.reset();
-      path.addRect(rect);
-
-      for (final fill in fills) {
-        fill.renderOpacity = opacity;
-      }
-      for (final stroke in strokes) {
-        stroke.renderOpacity = opacity;
-      }
-    }
-  }
+  void update(int dirt) {}
 
   @override
   void widthChanged(double from, double to) {
@@ -338,13 +232,6 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
   void yChanged(double from, double to) {
     addDirt(ComponentDirt.worldTransform);
   }
-
-  Vec2D renderTranslation(Vec2D worldTranslation) {
-    final wt = originWorld;
-    return worldTranslation + wt;
-  }
-
-  Mat2D get renderTransform => Mat2D.fromTranslate(x, y);
 
   /// Adds a component to the artboard. Good place for the artboard to check for
   /// components it'll later need to do stuff with (like draw them or sort them
@@ -400,50 +287,6 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
       context.markNeedsAdvance();
       dirt |= ComponentDirt.drawOrder;
     }
-  }
-
-  /// Draw the drawable components in this artboard.
-  void draw(
-    Canvas canvas,
-  ) {
-    canvas.save();
-    if (clip) {
-      if (_frameOrigin) {
-        canvas.clipRect(Rect.fromLTWH(0, 0, width, height));
-      } else {
-        canvas.clipRect(
-            Rect.fromLTWH(-width * originX, -height * originY, width, height));
-      }
-    }
-    // Get into artboard's world space. This is because the artboard draws
-    // components in the artboard's space (in component lingo we call this world
-    // space). The artboards themselves are drawn in the editor's world space,
-    // which is the world space that is used by stageItems. This is a little
-    // confusing and perhaps we should find a better wording for the transform
-    // spaces. We used "world space" in components as that's the game engine
-    // ratified way of naming the top-most transformation. Perhaps we should
-    // rename those to artboardTransform and worldTransform is only reserved for
-    // stageItems? The other option is to stick with 'worldTransform' in
-    // components and use 'editor or stageTransform' for stageItems.
-    if (_frameOrigin) {
-      canvas.translate(width * originX, height * originY);
-    }
-
-    for (final fill in fills) {
-      fill.draw(canvas, path);
-    }
-
-    for (var drawable = firstDrawable;
-        drawable != null;
-        drawable = drawable.prev) {
-      if (drawable.isHidden || drawable.renderOpacity == 0) {
-        continue;
-      }
-
-      drawable.draw(canvas);
-    }
-
-    canvas.restore();
   }
 
   @override
@@ -505,29 +348,13 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
   /// Add an animation controller to this artboard. Playing will be scheduled if
   /// it's already playing.
   bool addController(RiveAnimationController controller) {
-    if (_animationControllers.contains(controller) ||
-        !controller.init(context)) {
-      return false;
-    }
-    controller.isActiveChanged.addListener(_onControllerPlayingChanged);
-    _animationControllers.add(controller);
-    if (controller.isActive) {
-      context.markNeedsAdvance();
-    }
     return true;
   }
 
   /// Remove an animation controller form this artboard.
   bool removeController(RiveAnimationController controller) {
-    if (_animationControllers.remove(controller)) {
-      controller.isActiveChanged.removeListener(_onControllerPlayingChanged);
-      controller.dispose();
-      return true;
-    }
-    return false;
+    return true;
   }
-
-  void _onControllerPlayingChanged() => context.markNeedsAdvance();
 
   @override
   void onFillsChanged() {}
@@ -547,45 +374,9 @@ class Artboard extends ArtboardBase with ShapePaintContainer {
   @mustBeOverridden
   bool get isPlaying => true;
 
-  @override
-  Vec2D get worldTranslation => Vec2D();
-
   Drawable? firstDrawable;
 
-  void computeDrawOrder() {
-    _drawables.clear();
-    _rules.clear();
-    buildDrawOrder(_drawables, null, _rules);
-
-    // Build rule dependencies. In practice this'll need to happen anytime a
-    // target drawable is changed or rule is added/removed.
-    var root = DrawTarget();
-    // Make sure all dependents are empty.
-    for (final nodeRules in _rules) {
-      for (final target in nodeRules.targets) {
-        target.dependents.clear();
-      }
-    }
-
-    // Now build up the dependencies.
-    for (final nodeRules in _rules) {
-      for (final target in nodeRules.targets) {
-        root.dependents.add(target);
-        var dependentRules = target.drawable?.flattenedDrawRules;
-        if (dependentRules != null) {
-          for (final dependentRule in dependentRules.targets) {
-            dependentRule.dependents.add(target);
-          }
-        }
-      }
-    }
-
-    var sorter = DependencyGraphNodeSorter<Component>();
-
-    _sortedDrawRules = sorter.sort(root).cast<DrawTarget>().skip(1).toList();
-
-    sortDrawOrder();
-  }
+  void computeDrawOrder() {}
 
   void sortDrawOrder() {
     hasChangedDrawOrderInLastUpdate = true;

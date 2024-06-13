@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/rive_core/artboard.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/shape_paint_container.dart';
 

@@ -1,4 +1,4 @@
-import 'package:flutter/widgets.dart';
+import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/rive_core/custom_property_boolean.dart';
 import 'package:rive_dart_importer/src/rive_core/custom_property_number.dart';
 import 'package:rive_dart_importer/src/rive_core/custom_property_string.dart';

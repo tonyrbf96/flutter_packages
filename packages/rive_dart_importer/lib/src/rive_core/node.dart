@@ -1,5 +1,4 @@
 import 'package:rive_dart_importer/src/generated/node_base.dart';
-import 'package:rive_common/math.dart';
 
 export 'package:rive_dart_importer/src/generated/node_base.dart';
 
@@ -7,12 +6,6 @@ class _UnknownNode extends Node {}
 
 class Node extends NodeBase {
   static final Node unknown = _UnknownNode();
-
-  /// Sets the position of the Node
-  set translation(Vec2D pos) {
-    x = pos.x;
-    y = pos.y;
-  }
 
   @override
   void xChanged(double from, double to) {

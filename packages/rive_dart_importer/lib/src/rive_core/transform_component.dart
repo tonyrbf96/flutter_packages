@@ -1,3 +1,4 @@
+import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/generated/transform_component_base.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';
 import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
@@ -6,8 +7,6 @@ import 'package:rive_dart_importer/src/rive_core/container_component.dart';
 import 'package:rive_dart_importer/src/rive_core/draw_rules.dart';
 import 'package:rive_dart_importer/src/rive_core/drawable.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/clipping_shape.dart';
-import 'package:rive_dart_importer/src/rive_core/world_transform_component.dart';
-import 'package:rive_common/math.dart';
 
 export 'package:rive_dart_importer/src/generated/transform_component_base.dart';
 
@@ -38,10 +37,6 @@ abstract class TransformComponent extends TransformComponentBase {
   double _renderOpacity = 1;
   double get renderOpacity => _renderOpacity;
 
-  final Mat2D transform = Mat2D();
-
-  Vec2D get translation => Vec2D.fromValues(x, y);
-
   double get x;
   double get y;
   set x(double value);
@@ -57,46 +52,15 @@ abstract class TransformComponent extends TransformComponentBase {
     }
   }
 
-  void updateTransform() {
-    if (rotation != 0) {
-      Mat2D.fromRotation(transform, rotation);
-    } else {
-      Mat2D.setIdentity(transform);
-    }
-    transform[4] = x;
-    transform[5] = y;
-
-    Mat2D.scaleByValues(transform, scaleX, scaleY);
-  }
+  void updateTransform() {}
 
   // TODO: when we have layer effect renderers, this will need to render 1 for
   // layer effects.
   @override
   double get childOpacity => _renderOpacity;
 
-  Vec2D get scale => Vec2D.fromValues(scaleX, scaleY);
-  set scale(Vec2D value) {
-    scaleX = value.x;
-    scaleY = value.y;
-  }
-
   @mustCallSuper
-  void updateWorldTransform() {
-    _renderOpacity = opacity;
-    if (parent is WorldTransformComponent) {
-      var parentNode = parent as WorldTransformComponent;
-      _renderOpacity *= parentNode.childOpacity;
-      Mat2D.multiply(worldTransform, parentNode.worldTransform, transform);
-    } else {
-      Mat2D.copy(worldTransform, transform);
-    }
-
-    if (_constraints.isNotEmpty) {
-      for (final constraint in _constraints) {
-        constraint.constrain(this);
-      }
-    }
-  }
+  void updateWorldTransform() {}
 
   void calculateWorldTransform() {
     var parent = this.parent;
@@ -205,12 +169,6 @@ abstract class TransformComponent extends TransformComponentBase {
     }
     super.buildDrawOrder(drawables, rules, allRules);
   }
-
-  AABB get localBounds => AABB.collapsed(Vec2D());
-
-  /// Bounds to use for constraining to object space.
-  @override
-  AABB get constraintBounds => AABB.collapsed(Vec2D());
 
   void markDirtyIfConstrained() {
     if (constraints.isNotEmpty) {

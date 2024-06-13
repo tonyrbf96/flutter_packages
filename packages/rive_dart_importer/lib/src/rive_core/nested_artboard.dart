@@ -1,16 +1,12 @@
-import 'dart:math';
-
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/generated/nested_artboard_base.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/nested_remap_animation.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/nested_simple_animation.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/nested_state_machine.dart';
 import 'package:rive_dart_importer/src/rive_core/backboard.dart';
-import 'package:rive_dart_importer/src/rive_core/bounds_provider.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';
 import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
 import 'package:rive_dart_importer/src/rive_core/nested_animation.dart';
-import 'package:rive_common/math.dart';
 
 export 'package:rive_dart_importer/src/generated/nested_artboard_base.dart';
 
@@ -40,10 +36,6 @@ enum NestedArtboardAlignmentType {
 /// Represents the nested Artboard that'll actually be mounted and placed into
 /// the [NestedArtboard] component.
 abstract class MountedArtboard {
-  void draw(Canvas canvas);
-  Mat2D get worldTransform;
-  set worldTransform(Mat2D value);
-  AABB get bounds;
   double get renderOpacity;
   set renderOpacity(double value);
   bool advance(double seconds, {bool nested});
@@ -56,7 +48,7 @@ abstract class MountedArtboard {
   void dispose();
 }
 
-class NestedArtboard extends NestedArtboardBase implements Sizable {
+class NestedArtboard extends NestedArtboardBase {
   /// [NestedAnimation]s applied to this [NestedArtboard].
   final List<NestedAnimation> _animations = [];
   Iterable<NestedAnimation> get animations => _animations;
@@ -83,14 +75,10 @@ class NestedArtboard extends NestedArtboardBase implements Sizable {
     }
     _mountedArtboard?.dispose();
     _mountedArtboard = value;
-    _updateMountedTransform();
+
     _mountedArtboard?.renderOpacity = renderOpacity;
     _mountedArtboard?.advance(0);
     addDirt(ComponentDirt.paint);
-
-    if (cachedSize != null) {
-      controlSize(cachedSize!);
-    }
   }
 
   @override
@@ -101,16 +89,6 @@ class NestedArtboard extends NestedArtboardBase implements Sizable {
 
   @override
   void artboardIdChanged(int from, int to) {}
-
-  @override
-  void fitChanged(int from, int to) {
-    _updateMountedTransform();
-  }
-
-  @override
-  void alignmentChanged(int from, int to) {
-    _updateMountedTransform();
-  }
 
   @override
   void childAdded(Component child) {
@@ -137,140 +115,9 @@ class NestedArtboard extends NestedArtboardBase implements Sizable {
     }
   }
 
-  // When used with layouts, we cache the size of the NestedArtboard
-  // because the mountedArtboard gets replaced when changes are made to the
-  // NestedArtboard's artboard, and we need to maintain size when that happens
-  Size? cachedSize;
-
-  @override
-  Size computeIntrinsicSize(Size min, Size max) {
-    final bounds = mountedArtboard?.bounds;
-    if (bounds == null) {
-      return min;
-    }
-    return Size(bounds.width * scaleX, bounds.height * scaleY);
-  }
-
-  @override
-  void controlSize(Size size) {
-    cachedSize = size;
-    if (mountedArtboard == null) {
-      return;
-    }
-    // Since NestedArtboards only use scale, not width/height, we have to do
-    // a bit of a conversion here. There may be a better way.
-
-    scaleX = size.width / mountedArtboard!.originalArtboardWidth;
-    scaleY = size.height / mountedArtboard!.originalArtboardHeight;
-
-    updateTransform();
-    updateWorldTransform();
-  }
-
-  void _updateMountedTransform() {
-    var mountedArtboard = _mountedArtboard;
-    if (mountedArtboard != null) {
-      Mat2D transform = Mat2D();
-      Mat2D.copy(transform, worldTransform);
-      if (fitType == NestedArtboardFitType.resizeArtboard) {
-        // resizeArtboard is a special case because we actually change the
-        // width/height of the RuntimeArtboard rather than scaling it
-        mountedArtboard.artboardWidth =
-            scaleX * mountedArtboard.originalArtboardWidth;
-        mountedArtboard.artboardHeight =
-            scaleY * mountedArtboard.originalArtboardHeight;
-        double computedScaleX = scaleX == 0 ? 0 : (1 / scaleX);
-        double computedScaleY = scaleY == 0 ? 0 : (1 / scaleY);
-        Mat2D.scaleByValues(transform, computedScaleX, computedScaleY);
-      } else {
-        // For all others we scale
-        mountedArtboard.artboardWidth = mountedArtboard.originalArtboardWidth;
-        mountedArtboard.artboardHeight = mountedArtboard.originalArtboardHeight;
-        double? scaleMultiplier;
-        switch (fitType) {
-          case NestedArtboardFitType.cover:
-            scaleMultiplier = max(scaleX, scaleY);
-            break;
-          case NestedArtboardFitType.contain:
-            scaleMultiplier = min(scaleX, scaleY);
-            break;
-          case NestedArtboardFitType.fitWidth:
-            scaleMultiplier = scaleX;
-            break;
-          case NestedArtboardFitType.fitHeight:
-            scaleMultiplier = scaleY;
-            break;
-          case NestedArtboardFitType.none:
-            scaleMultiplier = 1;
-            break;
-          default:
-            break;
-        }
-        if (scaleMultiplier != null) {
-          double computedScaleX =
-              scaleX == 0 ? 0 : (1 / scaleX) * scaleMultiplier;
-          double computedScaleY =
-              scaleY == 0 ? 0 : (1 / scaleY) * scaleMultiplier;
-          Mat2D.scaleByValues(transform, computedScaleX, computedScaleY);
-          // Only do alignment if we are not using fit type Fill
-          double translateX = 0;
-          double translateY = 0;
-          double artboardWidth = mountedArtboard.originalArtboardWidth;
-          double artboardHeight = mountedArtboard.originalArtboardHeight;
-          // Adjust x position if we're aligned center or right
-          if (alignmentType == NestedArtboardAlignmentType.topCenter ||
-              alignmentType == NestedArtboardAlignmentType.center ||
-              alignmentType == NestedArtboardAlignmentType.bottomCenter) {
-            translateX =
-                (artboardWidth * scaleX - artboardWidth * scaleMultiplier) / 2;
-          } else if (alignmentType == NestedArtboardAlignmentType.topRight ||
-              alignmentType == NestedArtboardAlignmentType.centerRight ||
-              alignmentType == NestedArtboardAlignmentType.bottomRight) {
-            translateX =
-                artboardWidth * scaleX - artboardWidth * scaleMultiplier;
-          }
-          // Adjust y position if we're aligned center or bottom
-          if (alignmentType == NestedArtboardAlignmentType.centerLeft ||
-              alignmentType == NestedArtboardAlignmentType.center ||
-              alignmentType == NestedArtboardAlignmentType.centerRight) {
-            translateY =
-                (artboardHeight * scaleY - artboardHeight * scaleMultiplier) /
-                    2;
-          } else if (alignmentType == NestedArtboardAlignmentType.bottomLeft ||
-              alignmentType == NestedArtboardAlignmentType.bottomCenter ||
-              alignmentType == NestedArtboardAlignmentType.bottomRight) {
-            translateY =
-                artboardHeight * scaleY - artboardHeight * scaleMultiplier;
-          }
-          if (translateX != 0) {
-            transform[4] += translateX;
-          }
-          if (translateY != 0) {
-            transform[5] += translateY;
-          }
-        }
-      }
-      mountedArtboard.worldTransform = transform;
-    }
-  }
-
-  /// Convert a world position to local for the mounted artboard.
-  Vec2D? worldToLocal(Vec2D position) {
-    var mounted = mountedArtboard;
-    if (mounted == null) {
-      return null;
-    }
-    var toMountedArtboard = Mat2D();
-    if (!Mat2D.invert(toMountedArtboard, mounted.worldTransform)) {
-      return null;
-    }
-    return Vec2D.transformMat2D(Vec2D(), position, toMountedArtboard);
-  }
-
   @override
   void updateWorldTransform() {
     super.updateWorldTransform();
-    _updateMountedTransform();
   }
 
   bool advance(double elapsedSeconds) {
@@ -304,16 +151,6 @@ class NestedArtboard extends NestedArtboardBase implements Sizable {
   }
 
   @override
-  void draw(Canvas canvas) {
-    bool clipped = clip(canvas);
-    mountedArtboard?.draw(canvas);
-
-    if (clipped) {
-      canvas.restore();
-    }
-  }
-
-  @override
   bool import(ImportStack stack) {
     var backboardImporter =
         stack.latest<BackboardImporter>(BackboardBase.typeKey);
@@ -323,4 +160,27 @@ class NestedArtboard extends NestedArtboardBase implements Sizable {
 
     return super.import(stack);
   }
+
+  @override
+  void alignmentChanged(int from, int to) {}
+
+  @override
+  computeIntrinsicSize(min, max) {
+    throw UnimplementedError();
+  }
+
+  @override
+  void controlSize(size) {}
+
+  @override
+  void draw(canvas) {}
+
+  @override
+  void fitChanged(int from, int to) {}
+
+  @override
+  void blendModeValueChanged(int from, int to) {}
+
+  @override
+  void drawableFlagsChanged(int from, int to) {}
 }

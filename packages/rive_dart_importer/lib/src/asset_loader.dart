@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:http/http.dart' as http;
@@ -89,15 +90,13 @@ class LocalAssetLoader extends FileAssetLoader {
   final String? fontPath;
   final String? imagePath;
   final String? path;
-  final AssetBundle _assetBundle;
 
   LocalAssetLoader({
     this.audioPath,
     this.fontPath,
     this.imagePath,
     this.path,
-    AssetBundle? assetBundle,
-  }) : _assetBundle = assetBundle ?? rootBundle;
+  });
 
   @override
   Future<bool> load(FileAsset asset, Uint8List? embeddedBytes) async {
@@ -135,8 +134,8 @@ class LocalAssetLoader extends FileAssetLoader {
     filePath = filePath.endsWith("/") ? filePath : "$filePath/";
 
     assetPath = filePath + asset.uniqueFilename;
-    final bytes = await _assetBundle.load(assetPath);
-    await asset.decode(Uint8List.view(bytes.buffer));
+    final bytes = await File(assetPath);
+    await asset.decode(bytes.readAsBytesSync());
     return true;
   }
 }

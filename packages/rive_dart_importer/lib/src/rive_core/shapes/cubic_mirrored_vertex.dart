@@ -1,10 +1,5 @@
-import 'dart:math';
-
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/generated/shapes/cubic_mirrored_vertex_base.dart';
-import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
-import 'package:rive_common/math.dart';
-
 export 'package:rive_dart_importer/src/generated/shapes/cubic_mirrored_vertex_base.dart';
 
 class CubicMirroredVertex extends CubicMirroredVertexBase {
@@ -15,62 +10,24 @@ class CubicMirroredVertex extends CubicMirroredVertexBase {
     InternalCoreHelper.markValid(this);
   }
 
-  Vec2D? _inPoint;
-  Vec2D? _outPoint;
+  @override
+  var inPoint;
 
   @override
-  Vec2D get outPoint {
-    return _outPoint ??= Vec2D.fromValues(
-        translation.x + cos(rotation) * distance,
-        translation.y + sin(rotation) * distance);
-  }
+  var outPoint;
 
   @override
-  set outPoint(Vec2D value) {
-    _outPoint = Vec2D.clone(value);
-  }
+  void distanceChanged(double from, double to) {}
 
   @override
-  Vec2D get inPoint {
-    return _inPoint ??= Vec2D.fromValues(
-        translation.x + cos(rotation) * -distance,
-        translation.y + sin(rotation) * -distance);
-  }
+  void rotationChanged(double from, double to) {}
 
   @override
-  set inPoint(Vec2D value) {
-    var diffIn = Vec2D.fromValues(value.x - x, value.y - y);
-    outPoint = translation - diffIn;
-  }
+  void markGeometryDirty() {}
 
   @override
-  String toString() {
-    return 'in $inPoint | $translation | out $outPoint';
-  }
+  void xChanged(double from, double to) {}
 
   @override
-  void xChanged(double from, double to) {
-    super.xChanged(from, to);
-    _outPoint = _inPoint = null;
-  }
-
-  @override
-  void yChanged(double from, double to) {
-    super.yChanged(from, to);
-    _outPoint = _inPoint = null;
-  }
-
-  @override
-  void distanceChanged(double from, double to) {
-    addDirt(ComponentDirt.worldTransform);
-    _inPoint = _outPoint = null;
-    path?.markPathDirty();
-  }
-
-  @override
-  void rotationChanged(double from, double to) {
-    addDirt(ComponentDirt.worldTransform);
-    _inPoint = _outPoint = null;
-    path?.markPathDirty();
-  }
+  void yChanged(double from, double to) {}
 }

@@ -1,52 +1,32 @@
 import 'package:rive_dart_importer/src/generated/shapes/ellipse_base.dart';
-import 'package:rive_dart_importer/src/rive_core/shapes/cubic_detached_vertex.dart';
-import 'package:rive_dart_importer/src/rive_core/shapes/path_vertex.dart';
-import 'package:rive_common/math.dart';
-
 export 'package:rive_dart_importer/src/generated/shapes/ellipse_base.dart';
 
 class Ellipse extends EllipseBase {
   @override
-  List<PathVertex> get vertices {
-    double ox = -originX * width + radiusX;
-    double oy = -originY * height + radiusY;
-
-    return [
-      CubicDetachedVertex.fromValues(
-        x: ox,
-        y: oy - radiusY,
-        inX: ox - radiusX * circleConstant,
-        inY: oy - radiusY,
-        outX: ox + radiusX * circleConstant,
-        outY: oy - radiusY,
-      ),
-      CubicDetachedVertex.fromValues(
-        x: ox + radiusX,
-        y: oy,
-        inX: ox + radiusX,
-        inY: oy + circleConstant * -radiusY,
-        outX: ox + radiusX,
-        outY: oy + circleConstant * radiusY,
-      ),
-      CubicDetachedVertex.fromValues(
-        x: ox,
-        y: oy + radiusY,
-        inX: ox + radiusX * circleConstant,
-        inY: oy + radiusY,
-        outX: ox - radiusX * circleConstant,
-        outY: oy + radiusY,
-      ),
-      CubicDetachedVertex.fromValues(
-        x: ox - radiusX,
-        y: oy,
-        inX: ox - radiusX,
-        inY: oy + radiusY * circleConstant,
-        outX: ox - radiusX,
-        outY: oy - radiusY * circleConstant,
-      ),
-    ];
+  computeBounds(toParent) {
+    throw UnimplementedError();
   }
 
-  double get radiusX => width / 2;
-  double get radiusY => height / 2;
+  @override
+  computeIntrinsicSize(min, max) {
+    throw UnimplementedError();
+  }
+
+  @override
+  void controlSize(size) {}
+
+  @override
+  void heightChanged(double from, double to) {}
+
+  @override
+  void originXChanged(double from, double to) {}
+
+  @override
+  void originYChanged(double from, double to) {}
+
+  @override
+  void pathFlagsChanged(int from, int to) {}
+
+  @override
+  void widthChanged(double from, double to) {}
 }

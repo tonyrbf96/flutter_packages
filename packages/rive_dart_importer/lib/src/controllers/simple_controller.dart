@@ -36,9 +36,7 @@ class SimpleAnimation extends RiveAnimationController<RuntimeArtboard> {
 
   @override
   void apply(RuntimeArtboard artboard, double elapsedSeconds) {
-    if (_instance == null || !_instance!.keepGoing) {
-      isActive = false;
-    }
+    if (_instance == null || !_instance!.keepGoing) {}
 
     // We apply before advancing. So we want to stop rendering only once the
     // last advanced frame has been applied. This means knowing when the last
@@ -54,7 +52,6 @@ class SimpleAnimation extends RiveAnimationController<RuntimeArtboard> {
   @override
   bool init(RuntimeArtboard artboard) {
     _instance = artboard.animationByName(animationName);
-    isActive = autoplay;
     return _instance != null;
   }
 

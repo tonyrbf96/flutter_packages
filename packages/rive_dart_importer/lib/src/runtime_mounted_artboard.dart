@@ -1,9 +1,7 @@
-import 'package:flutter/rendering.dart';
 import 'package:rive_dart_importer/src/controllers/state_machine_controller.dart';
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/rive_core/event.dart';
 import 'package:rive_dart_importer/src/rive_core/nested_artboard.dart';
-import 'package:rive_common/math.dart';
 
 /// Callback signature for events firing.
 typedef OnRuntimeEvent = void Function(Event);
@@ -17,7 +15,6 @@ class RuntimeMountedArtboard extends MountedArtboard {
   NestedArtboard nestedArtboard;
   final RuntimeArtboard artboardInstance;
   final Set<RuntimeEventReporter> _runtimeEventListeners = {};
-  Size originalArtboardInstanceSize = const Size(0, 0);
 
   Set<StateMachineController> get controllers =>
       _runtimeEventListeners.whereType<StateMachineController>().toSet();
@@ -26,9 +23,6 @@ class RuntimeMountedArtboard extends MountedArtboard {
   Function(Event, NestedArtboard)? eventCallback;
 
   RuntimeMountedArtboard(this.artboardInstance, this.nestedArtboard) {
-    // Store the initial w/h of the artboard and use that as the starting point
-    originalArtboardInstanceSize =
-        Size(artboardInstance.width, artboardInstance.height);
     artboardInstance.frameOrigin = false;
     artboardInstance.advance(0, nested: true);
   }
@@ -37,27 +31,6 @@ class RuntimeMountedArtboard extends MountedArtboard {
   void dispose() {
     _runtimeEventListeners.clear();
     eventCallback = null;
-  }
-
-  @override
-  Mat2D worldTransform = Mat2D();
-
-  @override
-  void draw(Canvas canvas) {
-    canvas.save();
-    canvas.transform(worldTransform.mat4);
-    artboardInstance.draw(canvas);
-    canvas.restore();
-  }
-
-  @override
-  AABB get bounds {
-    var width = originalArtboardWidth;
-
-    var height = originalArtboardHeight;
-    var x = -artboardInstance.originX * width;
-    var y = -artboardInstance.originY * height;
-    return AABB.fromValues(x, y, x + width, y + height);
   }
 
   @override
@@ -78,12 +51,6 @@ class RuntimeMountedArtboard extends MountedArtboard {
   set artboardHeight(double height) {
     artboardInstance.height = height;
   }
-
-  @override
-  double get originalArtboardWidth => originalArtboardInstanceSize.width;
-
-  @override
-  double get originalArtboardHeight => originalArtboardInstanceSize.height;
 
   @override
   set renderOpacity(double value) {
@@ -124,8 +91,13 @@ class RuntimeMountedArtboard extends MountedArtboard {
       if (listener is StateMachineController &&
           listener.hasListenerWithTarget(target)) {
         listener.reportNestedEvent(event, target);
-        listener.isActive = true;
       }
     });
   }
+
+  @override
+  double get originalArtboardHeight => throw UnimplementedError();
+
+  @override
+  double get originalArtboardWidth => throw UnimplementedError();
 }

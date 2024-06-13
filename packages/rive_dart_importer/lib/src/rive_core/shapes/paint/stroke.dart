@@ -1,8 +1,5 @@
 import 'package:rive_dart_importer/src/generated/shapes/paint/stroke_base.dart';
-import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
-import 'package:rive_dart_importer/src/rive_core/enum_helper.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/paint/stroke_effect.dart';
-import 'package:rive_dart_importer/src/rive_core/shapes/shape.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/shape_paint_container.dart';
 
 export 'package:rive_dart_importer/src/generated/shapes/paint/stroke_base.dart';
@@ -34,12 +31,7 @@ class Stroke extends StrokeBase {
   void thicknessChanged(double from, double to) {}
 
   @override
-  void transformAffectsStrokeChanged(bool from, bool to) {
-    var parentShape = parent;
-    if (parentShape is Shape) {
-      parentShape.paintChanged();
-    }
-  }
+  void transformAffectsStrokeChanged(bool from, bool to) {}
 
   @override
   void update(int dirt) {

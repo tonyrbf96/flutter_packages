@@ -38,7 +38,7 @@ class TextValueRun extends TextValueRunBase {
     return value;
   }
 
-  void markShapeDirty() => textComponent?.markShapeDirty();
+  void markShapeDirty() {}
 
   @override
   void onAdded() {}
@@ -65,5 +65,5 @@ class TextValueRun extends TextValueRunBase {
   void update(int dirt) {}
 
   @override
-  void textChanged(String from, String to) => textComponent?.markShapeDirty();
+  void textChanged(String from, String to) {}
 }

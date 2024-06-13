@@ -1,7 +1,8 @@
 name: melossamble
 
 packages:
-  - rive_extension
+  - packages/*
+  - packages/rive_generator/example
 
 scripts:
   gen:dart:

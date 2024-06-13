@@ -22,14 +22,11 @@ class OneShotAnimation extends SimpleAnimation {
     bool autoplay = true,
     // this.onStop,
     // this.onStart,
-  }) : super(animationName, mix: mix, autoplay: autoplay) {
-    isActiveChanged.addListener(onActiveChanged);
-  }
+  }) : super(animationName, mix: mix, autoplay: autoplay) {}
 
   /// Dispose of any callback listeners
   @override
   void dispose() {
-    isActiveChanged.removeListener(onActiveChanged);
     super.dispose();
   }
 

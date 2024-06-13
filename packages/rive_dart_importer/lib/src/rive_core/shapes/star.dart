@@ -9,9 +9,6 @@ export 'package:rive_dart_importer/src/generated/shapes/star_base.dart';
 
 class Star extends StarBase {
   @override
-  void innerRadiusChanged(double from, double to) => markPathDirty();
-
-  @override
   List<PathVertex<Weight>> get vertices {
     double ox = -originX * width + width / 2;
     double oy = -originY * height + height / 2;
@@ -38,4 +35,7 @@ class Star extends StarBase {
     }
     return vertexList;
   }
+
+  @override
+  void innerRadiusChanged(double from, double to) {}
 }

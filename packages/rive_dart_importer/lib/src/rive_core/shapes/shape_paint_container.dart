@@ -1,10 +1,8 @@
 import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';
-import 'package:rive_dart_importer/src/rive_core/container_component.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/paint/fill.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/paint/shape_paint_mutator.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/paint/stroke.dart';
-import 'package:rive_common/math.dart';
 
 /// An abstraction to give a common interface to any component that can contain
 /// fills and strokes.
@@ -72,6 +70,4 @@ abstract class ShapePaintContainer {
 
   bool addDependent(Component dependent, {Component? via});
   void appendChild(Component child);
-  Mat2D get worldTransform;
-  Vec2D get worldTranslation;
 }

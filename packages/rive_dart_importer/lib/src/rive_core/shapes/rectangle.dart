@@ -1,50 +1,48 @@
 import 'package:rive_dart_importer/src/generated/shapes/rectangle_base.dart';
-import 'package:rive_dart_importer/src/rive_core/shapes/path_vertex.dart';
-import 'package:rive_dart_importer/src/rive_core/shapes/straight_vertex.dart';
 
 export 'package:rive_dart_importer/src/generated/shapes/rectangle_base.dart';
 
 class Rectangle extends RectangleBase {
-  //
   @override
-  List<PathVertex> get vertices {
-    double ox = -originX * width;
-    double oy = -originY * height;
-
-    return [
-      StraightVertex.procedural()
-        ..x = ox
-        ..y = oy
-        ..radius = cornerRadiusTL,
-      StraightVertex.procedural()
-        ..x = ox + width
-        ..y = oy
-        ..radius = linkCornerRadius ? cornerRadiusTL : cornerRadiusTR,
-      StraightVertex.procedural()
-        ..x = ox + width
-        ..y = oy + height
-        ..radius = linkCornerRadius ? cornerRadiusTL : cornerRadiusBR,
-      StraightVertex.procedural()
-        ..x = ox
-        ..y = oy + height
-        ..radius = linkCornerRadius ? cornerRadiusTL : cornerRadiusBL,
-    ];
+  computeBounds(toParent) {
+    throw UnimplementedError();
   }
 
   @override
-  void cornerRadiusTLChanged(double from, double to) => markPathDirty();
-
-  @override
-  void cornerRadiusTRChanged(double from, double to) => markPathDirty();
-
-  @override
-  void cornerRadiusBLChanged(double from, double to) => markPathDirty();
-
-  @override
-  void cornerRadiusBRChanged(double from, double to) => markPathDirty();
-
-  @override
-  void linkCornerRadiusChanged(bool from, bool to) {
-    markPathDirty();
+  computeIntrinsicSize(min, max) {
+    throw UnimplementedError();
   }
+
+  @override
+  void controlSize(size) {}
+
+  @override
+  void cornerRadiusBLChanged(double from, double to) {}
+
+  @override
+  void cornerRadiusBRChanged(double from, double to) {}
+
+  @override
+  void cornerRadiusTLChanged(double from, double to) {}
+
+  @override
+  void cornerRadiusTRChanged(double from, double to) {}
+
+  @override
+  void heightChanged(double from, double to) {}
+
+  @override
+  void linkCornerRadiusChanged(bool from, bool to) {}
+
+  @override
+  void originXChanged(double from, double to) {}
+
+  @override
+  void originYChanged(double from, double to) {}
+
+  @override
+  void pathFlagsChanged(int from, int to) {}
+
+  @override
+  void widthChanged(double from, double to) {}
 }

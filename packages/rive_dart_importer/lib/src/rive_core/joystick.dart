@@ -3,8 +3,6 @@ import 'package:rive_dart_importer/src/rive_core/animation/linear_animation.dart
 import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
 import 'package:rive_dart_importer/src/rive_core/container_component.dart';
 import 'package:rive_dart_importer/src/rive_core/transform_component.dart';
-import 'package:rive_dart_importer/src/rive_core/world_transform_component.dart';
-import 'package:rive_common/math.dart';
 
 export 'package:rive_dart_importer/src/generated/joystick_base.dart';
 
@@ -26,19 +24,7 @@ class Joystick extends JoystickBase {
   bool get isComplex => handleSource != null;
 
   @override
-  void update(int dirt) {
-    if (dirt & (ComponentDirt.transform | ComponentDirt.worldTransform) != 0) {
-      _worldTransform = computeWorldTransform();
-      Mat2D.invert(_inverseWorldTransform, _worldTransform);
-      if (isComplex) {
-        var pos = _inverseWorldTransform * handleSource!.worldTranslation;
-        var local = localBounds.factorFrom(pos);
-
-        x = local.x;
-        y = local.y;
-      }
-    }
-  }
+  void update(int dirt) {}
 
   bool get invertX => (joystickFlags & JoystickFlags.invertX) != 0;
   set invertX(bool value) {
@@ -99,26 +85,6 @@ class Joystick extends JoystickBase {
     parent?.addDependent(this);
     handleSource?.addDependent(this);
   }
-
-  Vec2D get position => Vec2D.fromValues(posX, posY);
-  Mat2D _worldTransform = Mat2D();
-  final Mat2D _inverseWorldTransform = Mat2D();
-
-  Mat2D computeWorldTransform() {
-    var local = Mat2D.fromTranslation(position);
-    if (parent is WorldTransformComponent) {
-      var world = Mat2D.multiply(
-          Mat2D(), (parent as WorldTransformComponent).worldTransform, local);
-      if (!inWorldSpace) {
-        return Mat2D.fromTranslation(world.translation);
-      }
-      return world;
-    }
-    return local;
-  }
-
-  Mat2D get worldTransform =>
-      inWorldSpace ? _worldTransform : computeWorldTransform();
 
   @override
   void yChanged(double from, double to) {
@@ -203,15 +169,6 @@ class Joystick extends JoystickBase {
 
   double get stageWidth => isSliderY ? minStageSize : width;
   double get stageHeight => isSliderX ? minStageSize : height;
-
-  AABB get localBounds => AABB.fromValues(
-        -stageWidth * originX,
-        -stageHeight * originY,
-        -stageWidth * originX + stageWidth,
-        -stageHeight * originY + stageHeight,
-      );
-
-  Mat2D get transform => Mat2D.fromTranslation(position);
 
   @override
   void originXChanged(double from, double to) => _transformChanged();

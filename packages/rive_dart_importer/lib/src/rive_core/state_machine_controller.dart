@@ -2,20 +2,13 @@ library rive_core;
 
 import 'dart:collection';
 import 'dart:math';
-
-import 'package:collection/collection.dart';
-import 'package:flutter/gestures.dart';
-import 'package:flutter/scheduler.dart';
+import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/core/core.dart';
-import 'package:rive_dart_importer/src/rive_core/animation/animation_state.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/animation_state_instance.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/any_state.dart';
-import 'package:rive_dart_importer/src/rive_core/animation/entry_state.dart';
-import 'package:rive_dart_importer/src/rive_core/animation/exit_state.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/keyed_object.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/layer_state.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/linear_animation.dart';
-import 'package:rive_dart_importer/src/rive_core/animation/nested_state_machine.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/state_instance.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/state_machine.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/state_machine_fire_event.dart';
@@ -24,18 +17,12 @@ import 'package:rive_dart_importer/src/rive_core/animation/state_machine_listene
 import 'package:rive_dart_importer/src/rive_core/animation/state_machine_trigger.dart';
 import 'package:rive_dart_importer/src/rive_core/animation/state_transition.dart';
 import 'package:rive_dart_importer/src/rive_core/artboard.dart';
-import 'package:rive_dart_importer/src/rive_core/audio_event.dart';
 import 'package:rive_dart_importer/src/rive_core/audio_player.dart';
-import 'package:rive_dart_importer/src/rive_core/component.dart';
-import 'package:rive_dart_importer/src/rive_core/drawable.dart';
 import 'package:rive_dart_importer/src/rive_core/event.dart';
 import 'package:rive_dart_importer/src/rive_core/layer_state_flags.dart';
-import 'package:rive_dart_importer/src/rive_core/nested_artboard.dart';
 import 'package:rive_dart_importer/src/rive_core/node.dart';
 import 'package:rive_dart_importer/src/rive_core/rive_animation_controller.dart';
-import 'package:rive_dart_importer/src/rive_core/shapes/shape.dart';
 import 'package:rive_dart_importer/src/runtime_event.dart';
-import 'package:rive_common/math.dart';
 
 /// Callback signature for state machine state changes
 typedef OnStateChange = void Function(
@@ -346,7 +333,7 @@ class StateMachineController extends RiveAnimationController<CoreContext>
   final _eventListeners = <OnEvent>{};
   AudioPlayer? _audioPlayer;
 
-  AudioPlayer get audioPlayer => (_audioPlayer ??= AudioPlayer.make())!;
+  AudioPlayer get audioPlayer => (_audioPlayer)!;
 
   AudioPlayer? get peekAudioPlayer => _audioPlayer;
 
@@ -367,11 +354,7 @@ class StateMachineController extends RiveAnimationController<CoreContext>
   void removeEventListener(OnEvent callback) =>
       _eventListeners.remove(callback);
 
-  void reportEvent(Event event) {
-    _reportedEvents.add(event);
-
-    isActive = true;
-  }
+  void reportEvent(Event event) {}
 
   void reportNestedEvent(Event event, Node source) {
     if (_reportedNestedEvents[source.id] == null) {
@@ -398,35 +381,12 @@ class StateMachineController extends RiveAnimationController<CoreContext>
     layerControllers.clear();
   }
 
-  /// Handles state change callbacks
-  void _onStateChange(LayerState layerState) =>
-
-      /// See https://github.com/flutter/flutter/issues/103561#issuecomment-1129356149
-      _ambiguate(SchedulerBinding.instance)?.addPostFrameCallback((_) {
-        String stateName = 'unknown';
-        if (layerState is AnimationState && layerState.animation != null) {
-          stateName = layerState.animation!.name;
-        } else if (layerState is EntryState) {
-          stateName = 'EntryState';
-        } else if (layerState is AnyState) {
-          stateName = 'EntryState';
-        } else if (layerState is ExitState) {
-          stateName = 'ExitState';
-        }
-
-        onStateChange?.call(stateMachine.name, stateName);
-      });
-
-  late List<_HitComponent> hitComponents = [];
-
   Artboard? _artboard;
 
   /// The artboard that this state machine controller is manipulating.
   Artboard? get artboard => _artboard;
 
   late CoreContext core;
-
-  final _recognizer = ImmediateMultiDragGestureRecognizer();
 
   @override
   bool init(CoreContext core) {
@@ -439,48 +399,12 @@ class StateMachineController extends RiveAnimationController<CoreContext>
         this,
         layer,
         core: core,
-        onLayerStateChange: _onStateChange,
       ));
     }
 
     // Make sure triggers are all reset.
     advanceInputs();
 
-    // Initialize all events.
-    HashMap<Shape, _HitShape> hitShapeLookup = HashMap<Shape, _HitShape>();
-    for (final event in stateMachine.listeners) {
-      if (event is StateMachineListener) {
-        // Resolve target on this artboard instance.
-        var node = core.resolve<Node>(event.targetId);
-        if (node == null) {
-          continue;
-        }
-
-        node.forAll((component) {
-          if (component is Shape) {
-            var hitShape = hitShapeLookup[component];
-            if (hitShape == null) {
-              hitShapeLookup[component] = hitShape = _HitShape(component, this);
-            }
-            hitShape.events.add(event);
-          }
-          // Keep iterating so we find all shapes.
-          return true;
-        });
-      }
-    }
-    hitShapeLookup.values.toList().forEach(hitComponents.add);
-
-    _artboard = core as RuntimeArtboard;
-
-    if (_artboard != null) {
-      for (final nestedArtboard in _artboard!.activeNestedArtboards) {
-        if (nestedArtboard.hasNestedStateMachine) {
-          hitComponents.add(_HitNestedArtboard(nestedArtboard, this));
-        }
-      }
-    }
-    _sortHittableComponents();
     return super.init(core);
   }
 
@@ -505,46 +429,15 @@ class StateMachineController extends RiveAnimationController<CoreContext>
   dynamic getInputValue(int id) => _inputValues[id];
   void setInputValue(int id, dynamic value) {
     _inputValues[id] = value;
-    isActive = true;
 
     if (onInputValueChange != null) {
       onInputValueChange!(id, value);
     }
   }
 
-  void _sortHittableComponents() {
-    Drawable? firstDrawable = artboard?.firstDrawable;
-    if (firstDrawable != null) {
-      // walk to the end, so we can visit in reverse-order
-      while (firstDrawable!.prev != null) {
-        firstDrawable = firstDrawable.prev;
-      }
-
-      int hitComponentsCount = hitComponents.length;
-      int currentSortedIndex = 0;
-      while (firstDrawable != null) {
-        for (var i = currentSortedIndex; i < hitComponentsCount; i++) {
-          if (hitComponents.elementAt(i).component == firstDrawable) {
-            if (currentSortedIndex != i) {
-              hitComponents.swap(i, currentSortedIndex);
-            }
-            currentSortedIndex++;
-            break;
-          }
-        }
-        if (currentSortedIndex == hitComponentsCount) {
-          break;
-        }
-        firstDrawable = firstDrawable.next;
-      }
-    }
-  }
-
   @override
   void apply(CoreContext core, double elapsedSeconds) {
-    if (artboard?.hasChangedDrawOrderInLastUpdate ?? false) {
-      _sortHittableComponents();
-    }
+    if (artboard?.hasChangedDrawOrderInLastUpdate ?? false) {}
 
     bool keepGoing = false;
     for (final layerController in layerControllers) {
@@ -553,156 +446,11 @@ class StateMachineController extends RiveAnimationController<CoreContext>
       }
     }
     advanceInputs();
-    isActive = keepGoing;
 
     applyEvents();
   }
 
-  void applyEvents() {
-    // Callback for events.
-    if (_reportedEvents.isNotEmpty || _reportedNestedEvents.isNotEmpty) {
-      var events = _reportedEvents.toList(growable: false);
-      var nestedEvents = Map<int, List<Event>>.from(_reportedNestedEvents);
-      _reportedEvents.clear();
-      _reportedNestedEvents.clear();
-
-      var listeners = stateMachine.listeners.whereType<StateMachineListener>();
-      listeners.forEach((listener) {
-        var listenerTarget = artboard?.context.resolve(listener.targetId);
-        if (listener.listenerType == ListenerType.event) {
-          // Handle events from this artboard if it is the target
-          if (listenerTarget == artboard) {
-            events.forEach((event) {
-              if (listener.eventId == event.id) {
-                listener.performChanges(this, Vec2D(), Vec2D());
-              }
-            });
-          } else {
-            // Handle events from nested artboards
-            nestedEvents.forEach((targetId, eventList) {
-              if (listener.targetId == targetId) {
-                eventList.forEach((nestedEvent) {
-                  if (listener.eventId == nestedEvent.id) {
-                    listener.performChanges(this, Vec2D(), Vec2D());
-                  }
-                });
-              }
-            });
-          }
-        }
-      });
-
-      var riveEvents = <RiveEvent>[];
-
-      for (final event in events) {
-        if (event is AudioEvent) {
-          event.play(audioPlayer);
-        }
-        riveEvents.add(RiveEvent.fromCoreEvent(event));
-      }
-      _eventListeners.toList().forEach((listener) {
-        riveEvents.forEach(listener);
-      });
-    }
-  }
-
-  HitResult _processEvent(
-    Vec2D position, {
-    PointerEvent? pointerEvent,
-    ListenerType? hitEvent,
-  }) {
-    var artboard = this.artboard;
-    if (artboard == null) {
-      return HitResult.none;
-    }
-    if (artboard.frameOrigin) {
-      // ignore: parameter_assignments
-      position = position -
-          Vec2D.fromValues(
-            artboard.width * artboard.originX,
-            artboard.height * artboard.originY,
-          );
-    }
-
-    bool hitSomething = false;
-    bool hitOpaque = false;
-    HitResult hitResult = HitResult.none;
-    for (final hitComponent in hitComponents) {
-      hitResult = hitComponent.processEvent(position,
-          hitEvent: hitEvent, pointerEvent: pointerEvent, canHit: !hitOpaque);
-      if (hitResult != HitResult.none) {
-        hitSomething = true;
-        if (hitResult == HitResult.hitOpaque) {
-          hitOpaque = true;
-        }
-      }
-    }
-    return hitSomething
-        ? hitOpaque
-            ? HitResult.hitOpaque
-            : HitResult.hit
-        : HitResult.none;
-  }
-
-  /// Hit testing. If any listeners were hit, returns true.
-  bool hitTest(
-    Vec2D position, {
-    PointerEvent? pointerEvent,
-    ListenerType? hitEvent,
-  }) {
-    var artboard = this.artboard;
-    if (artboard == null) {
-      return false;
-    }
-    if (artboard.frameOrigin) {
-      // ignore: parameter_assignments
-      position = position -
-          Vec2D.fromValues(
-            artboard.width * artboard.originX,
-            artboard.height * artboard.originY,
-          );
-    }
-
-    for (final hitComponent in hitComponents) {
-      if (hitComponent.hitTest(position)) {
-        return true;
-      }
-    }
-
-    return false; // no hit targets found
-  }
-
-  HitResult pointerMove(Vec2D position) => _processEvent(
-        position,
-        hitEvent: ListenerType.move,
-      );
-
-  HitResult pointerDown(Vec2D position, PointerDownEvent event) {
-    final hitResult = _processEvent(
-      position,
-      hitEvent: ListenerType.down,
-      pointerEvent: event,
-    );
-    if (hitResult != HitResult.none) {
-      _recognizer.addPointer(event);
-    }
-    return hitResult;
-  }
-
-  HitResult pointerUp(Vec2D position) => _processEvent(
-        position,
-        hitEvent: ListenerType.up,
-      );
-
-  HitResult pointerExit(Vec2D position) => _processEvent(
-        position,
-        hitEvent: ListenerType.exit,
-      );
-
-  HitResult pointerEnter(Vec2D position) => _processEvent(
-        position,
-        hitEvent: ListenerType.enter,
-      );
+  void applyEvents() {}
 
   /// Implementation of interface that reports which time based events have
   /// elapsed on a timeline within this state machine.
@@ -719,182 +467,3 @@ class StateMachineController extends RiveAnimationController<CoreContext>
     }
   }
 }
-
-enum HitResult {
-  none,
-  hit,
-  hitOpaque,
-}
-
-class _HitComponent {
-  final Component component;
-  final StateMachineController controller;
-  HitResult processEvent(
-    Vec2D position, {
-    PointerEvent? pointerEvent,
-    ListenerType? hitEvent,
-    bool canHit = true,
-  }) {
-    return HitResult.none;
-  }
-
-  bool hitTest(Vec2D position) {
-    return false;
-  }
-
-  _HitComponent(this.component, this.controller);
-}
-
-/// Representation of a Shape from the Artboard Instance and all the events it
-/// triggers. Allows tracking hover and performing hit detection only once on
-/// shapes that trigger multiple events.
-class _HitShape extends _HitComponent {
-  final Shape shape;
-  double hitRadius = 2;
-  bool isHovered = false;
-  final Vec2D previousPosition = Vec2D();
-  List<StateMachineListener> events = [];
-
-  _HitShape(this.shape, StateMachineController controller)
-      : super(shape, controller);
-
-  @override
-  bool hitTest(Vec2D position) {
-    var shape = component as Shape;
-    var bounds = shape.worldBounds;
-
-    // Quick reject
-    if (bounds.contains(position)) {
-      var hitArea = IAABB(
-        (position.x - hitRadius).round(),
-        (position.y - hitRadius).round(),
-        (position.x + hitRadius).round(),
-        (position.y + hitRadius).round(),
-      );
-      // Make hit tester.
-      var hitTester = TransformingHitTester(hitArea);
-      shape.fillHitTester(hitTester);
-      return hitTester.test(); // exit early
-    }
-    return false;
-  }
-
-  @override
-  HitResult processEvent(
-    Vec2D position, {
-    PointerEvent? pointerEvent,
-    ListenerType? hitEvent,
-    bool canHit = true,
-  }) {
-    var shape = component as Shape;
-    var isOver = false;
-    if (canHit) {
-      isOver = hitTest(position);
-    }
-    bool hoverChange = isHovered != isOver;
-    isHovered = isOver;
-    if (hoverChange && isHovered) {
-      previousPosition.x = position.x;
-      previousPosition.y = position.y;
-    }
-
-    // iterate all events associated with this hit shape
-    for (final event in events) {
-      // Always update hover states regardless of which specific event type
-      // we're trying to trigger.
-      if (hoverChange) {
-        if (isOver && event.listenerType == ListenerType.enter) {
-          event.performChanges(controller, position, previousPosition);
-          controller.isActive = true;
-        } else if (!isOver && event.listenerType == ListenerType.exit) {
-          event.performChanges(controller, position, previousPosition);
-          controller.isActive = true;
-        }
-      }
-      if (isOver && hitEvent == event.listenerType) {
-        event.performChanges(controller, position, previousPosition);
-        controller.isActive = true;
-      }
-    }
-    previousPosition.x = position.x;
-    previousPosition.y = position.y;
-    return isOver
-        ? shape.isTargetOpaque
-            ? HitResult.hitOpaque
-            : HitResult.hit
-        : HitResult.none;
-  }
-}
-
-class _HitNestedArtboard extends _HitComponent {
-  final NestedArtboard nestedArtboard;
-  _HitNestedArtboard(this.nestedArtboard, StateMachineController controller)
-      : super(nestedArtboard, controller);
-
-  @override
-  bool hitTest(Vec2D position) {
-    var nestedPosition = nestedArtboard.worldToLocal(position);
-    if (nestedArtboard.isCollapsed) {
-      return false;
-    }
-    if (nestedPosition == null) {
-      // Mounted artboard isn't ready or has a 0 scale transform.
-      return false;
-    }
-    for (final nestedStateMachine
-        in nestedArtboard.animations.whereType<NestedStateMachine>()) {
-      if (nestedStateMachine.hitTest(nestedPosition)) {
-        return true; // exit early
-      }
-    }
-    return false;
-  }
-
-  @override
-  HitResult processEvent(
-    Vec2D position, {
-    PointerEvent? pointerEvent,
-    ListenerType? hitEvent,
-    bool canHit = true,
-  }) {
-    HitResult hitResult = HitResult.none;
-    if (nestedArtboard.isCollapsed) {
-      return hitResult;
-    }
-    var nestedPosition = nestedArtboard.worldToLocal(position);
-    if (nestedPosition == null) {
-      // Mounted artboard isn't ready or has a 0 scale transform.
-      return hitResult;
-    }
-    for (final nestedStateMachine
-        in nestedArtboard.animations.whereType<NestedStateMachine>()) {
-      if (canHit) {
-        switch (hitEvent) {
-          case ListenerType.down:
-            hitResult = nestedStateMachine.pointerDown(
-              nestedPosition,
-              pointerEvent as PointerDownEvent,
-            );
-            break;
-          case ListenerType.up:
-            hitResult = nestedStateMachine.pointerUp(nestedPosition);
-            break;
-          default:
-            hitResult = nestedStateMachine.pointerMove(nestedPosition);
-            break;
-        }
-      } else {
-        nestedStateMachine.pointerExit(nestedPosition);
-      }
-    }
-    return hitResult;
-  }
-}
-
-/// This allows a value of type T or T?
-/// to be treated as a value of type T?.
-///
-/// We use this so that APIs that have become
-/// non-nullable can still be used with `!` and `?`
-/// to support older versions of the API as well.
-T? _ambiguate<T>(T? value) => value;

@@ -2,7 +2,6 @@ import 'package:rive_dart_importer/src/rive_core/artboard.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';
 import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
 import 'package:rive_dart_importer/src/rive_core/shapes/shape.dart';
-import 'package:rive_common/math.dart';
 
 /// The PathComposer builds the desired world and local paths for the shapes and
 /// their fills/strokes. It guarantees that one of local or world path is always
@@ -16,54 +15,6 @@ class PathComposer extends Component {
 
   @override
   Artboard? get artboard => shape.artboard;
-
-  final ui.Path worldPath = ui.Path();
-  final ui.Path localPath = ui.Path();
-  ui.Path _fillPath = ui.Path();
-  ui.Path get fillPath => _fillPath;
-
-  void _recomputePath() {
-    // No matter what we'll need some form of a world path to get our bounds.
-    // Let's optimize how we build it.
-    var buildLocalPath = shape.wantLocalPath;
-    var buildWorldPath = shape.wantWorldPath || !buildLocalPath;
-
-    // The fill path will be whichever one of these two is available.
-    if (buildLocalPath) {
-      localPath.reset();
-      var world = shape.worldTransform;
-      Mat2D inverseWorld = Mat2D();
-      if (Mat2D.invert(inverseWorld, world)) {
-        for (final path in shape.paths) {
-          if (path.isHidden || path.isCollapsed) {
-            continue;
-          }
-          localPath.addPath(path.uiPath, ui.Offset.zero,
-              matrix4:
-                  Mat2D.multiplySkipIdentity(inverseWorld, path.pathTransform)
-                      .mat4);
-        }
-      }
-
-      // If the world path doesn't get built, we should mark the bounds dirty
-      // here.
-      if (!buildWorldPath) {
-        shape.markBoundsDirty();
-      }
-    }
-    if (buildWorldPath) {
-      worldPath.reset();
-      for (final path in shape.paths) {
-        if (path.isHidden || path.isCollapsed) {
-          continue;
-        }
-        worldPath.addPath(path.uiPath, ui.Offset.zero,
-            matrix4: path.pathTransform.mat4);
-      }
-      shape.markBoundsDirty();
-    }
-    _fillPath = shape.fillInWorld ? worldPath : localPath;
-  }
 
   @override
   void buildDependencies() {
@@ -79,9 +30,7 @@ class PathComposer extends Component {
 
   @override
   void update(int dirt) {
-    if (dirt & ComponentDirt.path != 0) {
-      _recomputePath();
-    }
+    if (dirt & ComponentDirt.path != 0) {}
   }
 
   void syncCollapse() {

@@ -17,4 +17,10 @@ class MeshVertex extends MeshVertexBase {
 
   @override
   void vChanged(double from, double to) {}
+
+  @override
+  void xChanged(double from, double to) {}
+
+  @override
+  void yChanged(double from, double to) {}
 }
