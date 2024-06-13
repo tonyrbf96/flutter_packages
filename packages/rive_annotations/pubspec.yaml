@@ -1,5 +1,6 @@
 name: rive_annotations
-description: "A new Flutter package project."
+description: "This package contains annotations for rive_generator package"
+repository: https://github.com/tonyrbf96/flutter_packages
 version: 0.0.1
 topics:
   - rive

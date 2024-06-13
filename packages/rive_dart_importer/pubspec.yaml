@@ -1,6 +1,7 @@
 name: rive_dart_importer
 version: 0.13.7
-description: Rive Flutter Runtime. This package provides runtime functionality for playing back and interacting with animations built with the Rive editor available at https://rive.app.
+description: Rive file importer for Dart
+repository: https://github.com/tonyrbf96/flutter_packages
 topics:
   - animation
   - ui

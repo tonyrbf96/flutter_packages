@@ -10,9 +10,6 @@ class MeshVertex extends MeshVertexBase {
   bool validate() => super.validate() && parent is Mesh;
 
   @override
-  void markGeometryDirty() => mesh?.markDrawableDirty();
-
-  @override
   void uChanged(double from, double to) {}
 
   @override

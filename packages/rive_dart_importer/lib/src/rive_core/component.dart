@@ -41,24 +41,6 @@ abstract class Component extends ComponentBase<RuntimeArtboard> {
   static const int maxTreeDepth = 5000;
 
   bool addDirt(int value, {bool recurse = false}) {
-    if ((dirt & value) == value) {
-      // Already marked.
-      return false;
-    }
-
-    // Make sure dirt is set before calling anything that can set more dirt.
-    dirt |= value;
-
-    onDirty(dirt);
-    artboard?.onComponentDirty(this);
-
-    if (!recurse) {
-      return true;
-    }
-
-    for (final d in dependents) {
-      d.addDirt(value, recurse: recurse);
-    }
     return true;
   }
 
@@ -122,7 +104,6 @@ abstract class Component extends ComponentBase<RuntimeArtboard> {
   }
 
   ContainerComponent? _parent;
-  @override
   ContainerComponent? get parent => _parent;
 
   set parent(ContainerComponent? value) {
@@ -156,9 +137,6 @@ abstract class Component extends ComponentBase<RuntimeArtboard> {
 
   /// Components that this component depends on.
   final Set<Component> _dependsOn = {};
-
-  @override
-  Set<Component> get dependents => _dependents;
 
   Set<Component> get dependencies {
     Set<Component> components = {};

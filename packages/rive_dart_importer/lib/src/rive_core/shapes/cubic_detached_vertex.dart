@@ -19,12 +19,6 @@ class CubicDetachedVertex extends CubicDetachedVertexBase {
   }
 
   @override
-  var inPoint;
-
-  @override
-  var outPoint;
-
-  @override
   void inDistanceChanged(double from, double to) {}
 
   @override
@@ -35,9 +29,6 @@ class CubicDetachedVertex extends CubicDetachedVertexBase {
 
   @override
   void outRotationChanged(double from, double to) {}
-
-  @override
-  void markGeometryDirty() {}
 
   @override
   void xChanged(double from, double to) {}

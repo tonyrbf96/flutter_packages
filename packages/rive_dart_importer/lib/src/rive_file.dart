@@ -359,8 +359,6 @@ class RiveFile {
     );
   }
 
-  static bool _initializedText = false;
-
   static Future<RiveFile> _initTextAndImport(
     ByteData bytes, {
     FileAssetLoader? assetLoader,

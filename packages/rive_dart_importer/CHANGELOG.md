@@ -1,3 +1,3 @@
-## 0.0.1
+## 0.13.7
 
-* TODO: Describe initial release.
+First aproach to remove all dependencies from rive package and only use the necesary to parse the file.

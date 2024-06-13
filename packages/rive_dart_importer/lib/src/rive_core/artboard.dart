@@ -10,7 +10,6 @@ import 'package:rive_dart_importer/src/rive_core/animation/state_machine.dart';
 import 'package:rive_dart_importer/src/rive_core/backboard.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';
 import 'package:rive_dart_importer/src/rive_core/component_dirt.dart';
-import 'package:rive_dart_importer/src/rive_core/draw_rules.dart';
 import 'package:rive_dart_importer/src/rive_core/draw_target.dart';
 import 'package:rive_dart_importer/src/rive_core/drawable.dart';
 import 'package:rive_dart_importer/src/rive_core/event.dart';

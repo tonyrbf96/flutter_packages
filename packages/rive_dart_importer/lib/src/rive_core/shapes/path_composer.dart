@@ -55,10 +55,5 @@ class PathComposer extends Component {
   // recursive part will not kick in and the dependents won't update. This
   // scenario is not common, but it can happen when a solo toggles between an
   // empty group and a path for example.
-  void pathCollapseChanged() {
-    addDirt(ComponentDirt.path);
-    for (final d in dependents) {
-      d.addDirt(ComponentDirt.path, recurse: true);
-    }
-  }
+  void pathCollapseChanged() {}
 }

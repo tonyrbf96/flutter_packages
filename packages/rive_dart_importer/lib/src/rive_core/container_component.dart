@@ -1,4 +1,3 @@
-import 'package:meta/meta.dart';
 import 'package:rive_dart_importer/src/core/core.dart';
 import 'package:rive_dart_importer/src/generated/container_component_base.dart';
 import 'package:rive_dart_importer/src/rive_core/component.dart';

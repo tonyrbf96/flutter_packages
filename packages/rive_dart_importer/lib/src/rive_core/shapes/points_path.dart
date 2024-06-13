@@ -5,18 +5,8 @@ import 'package:rive_dart_importer/src/rive_core/shapes/path_vertex.dart';
 export 'package:rive_dart_importer/src/generated/shapes/points_path_base.dart';
 
 class PointsPath extends PointsPathBase with Skinnable<PathVertex> {
-  final List<PathVertex> _vertices = [];
-
   PointsPath() {
     isClosed = false;
-  }
-
-  @override
-  List<PathVertex> get vertices => _vertices;
-
-  @override
-  computeBounds(toParent) {
-    throw UnimplementedError();
   }
 
   @override

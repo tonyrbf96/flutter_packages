@@ -11,19 +11,10 @@ class CubicMirroredVertex extends CubicMirroredVertexBase {
   }
 
   @override
-  var inPoint;
-
-  @override
-  var outPoint;
-
-  @override
   void distanceChanged(double from, double to) {}
 
   @override
   void rotationChanged(double from, double to) {}
-
-  @override
-  void markGeometryDirty() {}
 
   @override
   void xChanged(double from, double to) {}

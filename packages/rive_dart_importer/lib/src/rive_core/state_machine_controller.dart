@@ -439,12 +439,6 @@ class StateMachineController extends RiveAnimationController<CoreContext>
   void apply(CoreContext core, double elapsedSeconds) {
     if (artboard?.hasChangedDrawOrderInLastUpdate ?? false) {}
 
-    bool keepGoing = false;
-    for (final layerController in layerControllers) {
-      if (layerController.apply(core, elapsedSeconds)) {
-        keepGoing = true;
-      }
-    }
     advanceInputs();
 
     applyEvents();

@@ -4,19 +4,6 @@ export 'package:rive_dart_importer/src/generated/shapes/rectangle_base.dart';
 
 class Rectangle extends RectangleBase {
   @override
-  computeBounds(toParent) {
-    throw UnimplementedError();
-  }
-
-  @override
-  computeIntrinsicSize(min, max) {
-    throw UnimplementedError();
-  }
-
-  @override
-  void controlSize(size) {}
-
-  @override
   void cornerRadiusBLChanged(double from, double to) {}
 
   @override

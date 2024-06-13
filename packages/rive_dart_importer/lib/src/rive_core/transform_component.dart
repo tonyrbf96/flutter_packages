@@ -178,17 +178,6 @@ abstract class TransformComponent extends TransformComponentBase {
 
   @override
   bool propagateCollapse(bool collapse) {
-    if (!super.propagateCollapse(collapse)) {
-      return false;
-    }
-
-    // In the runtime, we have to iterate the dependents
-    dependents.forEach((element) {
-      if (element is TransformComponent) {
-        element.markDirtyIfConstrained();
-      }
-    });
-
     return true;
   }
 }

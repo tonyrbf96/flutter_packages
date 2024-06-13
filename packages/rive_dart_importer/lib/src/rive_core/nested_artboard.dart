@@ -165,17 +165,6 @@ class NestedArtboard extends NestedArtboardBase {
   void alignmentChanged(int from, int to) {}
 
   @override
-  computeIntrinsicSize(min, max) {
-    throw UnimplementedError();
-  }
-
-  @override
-  void controlSize(size) {}
-
-  @override
-  void draw(canvas) {}
-
-  @override
   void fitChanged(int from, int to) {}
 
   @override

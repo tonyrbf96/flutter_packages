@@ -31,7 +31,6 @@ abstract class PointsPathBase extends Path {
   bool _isClosed = isClosedInitialValue;
 
   /// If the path should close back on its first vertex.
-  @override
   bool get isClosed => _isClosed;
 
   /// Change the [_isClosed] field value.

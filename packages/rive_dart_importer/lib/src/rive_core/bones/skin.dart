@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:rive_dart_importer/src/generated/bones/skin_base.dart';
 import 'package:rive_dart_importer/src/rive_core/bones/bone.dart';
 import 'package:rive_dart_importer/src/rive_core/bones/skinnable.dart';
@@ -14,7 +12,6 @@ export 'package:rive_dart_importer/src/generated/bones/skin_base.dart';
 class Skin extends SkinBase {
   final List<Tendon> _tendons = [];
   List<Tendon> get tendons => _tendons;
-  Float32List _boneTransforms = Float32List(0);
 
   @override
   void onDirty(int mask) {
@@ -32,9 +29,6 @@ class Skin extends SkinBase {
 
   @override
   void onAddedDirty() {}
-
-  @override
-  void onRemoved() {}
 
   @override
   void buildDependencies() {

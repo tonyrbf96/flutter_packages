@@ -23,12 +23,6 @@ class CubicAsymmetricVertex extends CubicAsymmetricVertexBase {
   }
 
   @override
-  var inPoint;
-
-  @override
-  var outPoint;
-
-  @override
   void inDistanceChanged(double from, double to) {}
 
   @override
@@ -36,9 +30,6 @@ class CubicAsymmetricVertex extends CubicAsymmetricVertexBase {
 
   @override
   void rotationChanged(double from, double to) {}
-
-  @override
-  void markGeometryDirty() {}
 
   @override
   void xChanged(double from, double to) {}
